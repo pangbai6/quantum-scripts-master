@@ -890,7 +890,7 @@
   },
   {
     "Name": "饿了么CK提交",
-    "Command": "UTUSER=(?<UTUSER>.*?);",
+    "Command": "UTUSER=",
     "ConcCount": 0,
     "CommandEnv": null,
     "Cron": null,
