@@ -88,13 +88,14 @@ async function QueryAccount(env) {
     var pin = getPin(cookie);
     var overdueDate = moment(env.CreateTime);
     var day = moment(new Date()).diff(overdueDate, 'day');
-    var overdueDate1 = moment(env.UpdateTime).add(30, 'days');
+    var overdueDate1 = moment(env.UpdateTime).add(3, 'days');
     var day1 = overdueDate1.diff(new Date(), 'day');
     if (day1 < 0) {
         day = 0;
     }
     var overdue = `\n【您已挂机】${day}天
-【预计失效】${day1}天后，${overdueDate1.format("MM月DD日")}失效。`
+【预计失效】${day1}天后，${overdueDate1.format("MM月DD日")}失效。` + `\n 目前有全自动续期 发送:自动挂机`
+
 
     var loginState = true;
     for (var i = 0; i < 5; i++) {
@@ -110,10 +111,11 @@ async function QueryAccount(env) {
         ss = false;
         return;
     }
-    var msg = "【温馨提示】京东呆瓜不懂玩什么发:攻略 不知道活动发:活动入口 挂机饿了么发:饿了么代挂";
+    var msg = "目前有全自动续期 发送:自动挂机";
     try {
         msg += await TotalBean(cookie);  //账户基本信息
     } catch (e) {
+        msg += "\r\n【京东账号】" + getPin(cookie)
         console.log(`【${pin}】查询账户基本信息异常。`)
         console.log(e.message)
     }
@@ -212,9 +214,8 @@ async function getjdfruitH5st() {
     });
     var config = {
         method: 'post',
-        url: 'http://114.215.146.116:8001/initForFarm',
+        url: 'http://quantum.cqzhilai.com.cn:8001/initForFarm',
         headers: {
-            'User-Agent': 'Apifox/1.0.0 (https://www.apifox.cn)',
             'Content-Type': 'application/json'
         },
         body: data
@@ -725,13 +726,9 @@ async function TotalBean(cookie) {
         isPlusVip: jdInfo.data.userInfo.isPlusVip,
         isRealNameAuth: jdInfo.data.userInfo.isRealNameAuth,
         beanCount: jdInfo.data.assetInfo.beanNum || 0,
-        // JingXiang: (data['base'] && data['base'].jvalue) || 0,
     }
 
     let PlustotalScore = 0;
-    // if (userInfo.isPlusVip) {
-    //     PlustotalScore = await queryScores(cookie); //plus会员分
-    // }
     msg = `\n【京东账号】${userInfo.nickName}`;
     if (userInfo.isRealNameAuth)
         msg += `(已实名)`;
@@ -804,3 +801,5 @@ function taskcashUrl(functionId, body = {}) {
         timeout: 10000
     }
 }
+
+
