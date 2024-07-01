@@ -168,7 +168,12 @@ async function QueryAccount(env) {
         console.log(`【${pin}】超市卡。`)
         console.log(e.message)
     }
-
+    try {
+        msg += await wangwang(cookie); //汪贝余额
+    } catch (e) {
+        console.log(`【${pin}】汪贝余额。`)
+        console.log(e.message)
+    }
     try {
         msg += await plantBean(cookie);//种豆得豆
     } catch (e) {
@@ -594,10 +599,10 @@ async function wanyiwan(cookie) {
 }
 
 async function chaoshika(cookie) {
-    let sign = `appid=JDC_APP_H5&loginType=2&loginWQBiz=ECard&body=&functionId=smt_exCard_supermarket&client=m&isLoading=true`;
+    const sign = `appid=jd-super-market&t=${Date.now()}&functionId=atop_channel_marketCard_cardInfo&client=m&uuid=&body=%7B%22babelChannel%22%3A%22ttt9%22%2C%22isJdApp%22%3A%221%22%2C%22isWx%22%3A%220%22%7D`;
     var options = {
-        url: `https://api.m.jd.com/`,
-        data: sign,
+        url: 'https://api.m.jd.com/atop_channel_marketCard_cardInfo',
+        method: 'post',
         headers: {
             'Cookie': cookie,
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -606,17 +611,21 @@ async function chaoshika(cookie) {
             'Connection': 'keep-alive',
             'Referer': 'https://pro.m.jd.com',
         },
-        timeout: 30000,
-        method: 'post'
+        data: sign,
+        timeout: 30000
     };
 
     try {
         const response = await axios(options);
         const data = response.data;
 
-        if (data.code === "0" && data.exCardVos) {
-            const balance = data.exCardVos.balance || "0.00";
-            return `\n【超市卡】余额：${balance}元`;
+        if (data.code === "0" && data.data && data.data.floorData && data.data.floorData.items) {
+            const marketCardVO = data.data.floorData.items[0].marketCardVO;
+            const balance = marketCardVO.balance || "0.00";
+            const giftGold = marketCardVO.giftGold || "0.00";
+            const expirationGiftAmountDes = marketCardVO.expirationGiftAmountDes || "无即将过期赠金";
+
+            return `\n【超市卡】余额：${balance}元，赠金：${giftGold}元，${expirationGiftAmountDes}`;
         } else {
             return '\n【超市卡】查询信息异常。';
         }
@@ -626,7 +635,37 @@ async function chaoshika(cookie) {
     }
 }
 
+async function wangwang(cookie) {
+    const sign = `appid=jd-super-market&functionId=atop_channel_my_score&client=m&body=%7B%22bizCode%22%3A%22cn_retail_jdsupermarket%22%2C%22scenario%22%3A%22sign%22%2C%22babelChannel%22%3A%22ttt1%22%2C%22isJdApp%22%3A%221%22%2C%22isWx%22%3A%220%22%7D&t=${Date.now()}`;
+    var options = {
+        url: 'http://api.m.jd.com/functionId=atop_channel_my_score',
+        method: 'post',
+        headers: {
+            'Cookie': cookie,
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Origin': 'https://pro.m.jd.com',
+            'User-Agent': 'jdapp;iPhone;11.6.0;;;M/5.0;appBuild/168341;jdSupportDarkMode/0;ef/1;ep/%7B%22ciphertype%22%3A5%2C%22cipher%22%3A%7B%22ud%22%3A%22DtvvYJq4EJvvZJG0CWTsC2PvY2UyZJHvCzHtCNPtZJS4EWG1DNrrCG%3D%3D%22%2C%22sv%22%3A%22CJCkCs41%22%2C%22iad%22%3A%22%22%7D%2C%22ts%22%3A1719811721%2C%22hdid%22%3A%22JM9F1ywUPwflvMIpYPok0tt5k9kW4ArJEU3lfLhxBqw%3D%22%2C%22version%22%3A%221.0.3%22%2C%22appname%22%3A%22com.360buy.jdmobile%22%2C%22ridx%22%3A-1%7D;Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;',
+            'Connection': 'keep-alive',
+            'Referer': 'https://pro.m.jd.com',
+        },
+        data: sign,
+        timeout: 30000
+    };
+    try {
+        const response = await axios(options);
+        const data = response.data;
 
+        if (data.code === "0" && data.data && data.data.floorData && data.data.floorData.items) {
+            const restScore = data.data.floorData.items[0].restScore || "0";
+            return `\n【汪贝余额】余额：${restScore}汪贝`;
+        } else {
+            return '\n【汪贝余额】查询信息异常。';
+        }
+    } catch (error) {
+        console.error('请求发生错误:', error);
+        return '\n【汪贝余额】查询信息异常。';
+    }
+}
 
 
 
@@ -988,5 +1027,6 @@ async function getJingBeanBalanceDetail(cookie, page) {
     console.log(`查询京东返回消息：${JSON.stringify(data)}`);
     return data;
 }
+
 
 
