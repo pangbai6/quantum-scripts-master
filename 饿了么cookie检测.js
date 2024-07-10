@@ -1,56 +1,73 @@
-const {
-    sendNotify: _0x581b21,
-    getEnvs: _0x3239cf,
-    api: _0x113831,
-    disableEnvs: _0x37a7f9
-} = require("./quantum");
+const { getEnvs, disableEnvs } = require("./quantum");
+const axios = require('axios');
 
-!(async () => {
-    var _0x13daa4 = await _0x3239cf("elmck", null, 2);
-
-    console.log("饿了么账号数量：" + _0x13daa4.length);
-    var _0x5661d6 = [];
-
-    for (let _0x42d0fb = 0; _0x42d0fb < _0x13daa4.length; _0x42d0fb++) {
-        if (_0x13daa4[_0x42d0fb].Value && _0x13daa4[_0x42d0fb].Enable) {
-            var cookie = _0x13daa4[_0x42d0fb].Value;
-            var USERID = cookie.match(/USERID=([^; ]+)(?=;?)/)[1];
-
-            var _0x2f3cd8 = decodeURI(USERID);
-
-            console.log("开始检测【饿了么账号" + _0x42d0fb + "】" + _0x2f3cd8 + " ....\n");
-
-            try {
-                var _0x122b6e = await _0x2f660f(cookie);
-
-                (_0x122b6e.message = "未登录") && (console.log("账号过期"), await _0x581b21("饿了么账号：" + _0x2f3cd8 + "，饿了么CK失效了，请重新提取ck 重新发送机器人", false, _0x13daa4[_0x42d0fb].UserId), _0x5661d6.push(cookie));
-            } catch (_0x4bef11) { }
-        }
-    }
-
-    if (_0x5661d6 && _0x5661d6.length > 0) {
-        console.log("禁用失效返回结果:" + JSON.stringify(await _0x37a7f9(_0x5661d6)));
-    } else console.log("无过期CK.");
-})().catch(_0x280963 => console.log(JSON.stringify(_0x280963)));
-
-async function _0x2f660f(cookie) {
+async function getUserDetail(cookie) {
     try {
-        const _0x1714ca = {
-            "method": "GET",
-            "url": "https://restapi.ele.me/eus/v5/user_detail",
-            "headers": {
-                "Referer": "https://h5.ele.me/",
-                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604",
-                "Cookie": cookie
+        const response = await axios({
+            method: 'GET',
+            url: 'https://restapi.ele.me/eus/v5/user_detail',
+            headers: {
+                'Referer': 'https://h5.ele.me/',
+                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604',
+                'Cookie': cookie
             }
-        };
+        });
 
-        // 发送请求并返回结果
-        return await _0x113831(_0x1714ca);
-    } catch (_0x2abd42) {
-        // 发生错误时返回错误信息
-        return _0x2abd42.response.body;
+        return response.data;
+    } catch (error) {
+        // 检查错误状态码，如果是401，则返回 null 表示账号已过期
+        if (error.response && error.response.status === 401) {
+            return null;
+        } else {
+            throw new Error(`请求用户详情时发生错误: ${error.message}`);
+        }
     }
 }
 
+async function main() {
+    try {
+        const accounts = await getEnvs("elmck", null, 2);
+        console.log(`饿了么账号数量: ${accounts.length}`);
+
+        const expiredCookies = [];
+        const validAccounts = [];
+
+        for (let i = 0; i < accounts.length; i++) {
+            const account = accounts[i];
+
+            if (account.Value && account.Enable) {
+                const cookie = account.Value;
+                const USERID = cookie.match(/USERID=([^; ]+)(?=;?)/)[1];
+                const decodedUserId = decodeURI(USERID);
+
+                console.log(`开始检测【饿了么账号${i}】${decodedUserId}...`);
+
+                try {
+                    const userInfo = await getUserDetail(cookie);
+
+                    if (userInfo === null) {
+                        // 如果返回 null，表示账号已过期
+                        expiredCookies.push(cookie);
+                    } else {
+                        // 返回了数据，标记为正常账号
+                        validAccounts.push(account);
+                        console.log("用户详情:", userInfo);
+                    }
+                } catch (error) {
+                    console.error(`请求用户详情时发生错误 (用户${decodedUserId}):`, error);
+                }
+            }
+        }
+
+        if (expiredCookies.length > 0) {
+            console.log("禁用失效返回结果:", await disableEnvs(expiredCookies));
+        } else {
+            console.log("无过期CK.");
+        }
+    } catch (error) {
+        console.error("执行主程序时发生错误:", error);
+    }
+}
+
+main();
 
