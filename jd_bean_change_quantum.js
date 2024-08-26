@@ -1,16 +1,12 @@
 /**
  * 
- * 京东账户信息查询
- * 该脚本中的各个API 均收集于各个库中。
- * 支持变量
+偷ck版旁白
  * NO_CK_NOTIFY 没有京东ck时提示消息
  * QUERY_JD_USE_SCORE 查询所需积分。
  * QUERY_JD_USE_SCORE_TIPS 查询时用户积分不足提醒
  * QUERY_JD_USE_SCORE_TYPE  积分扣费模式，如  QUERY_JD_USE_SCORE 设置为 10 ， QUERY_JD_USE_SCORE_TYPE 为1 则查询一次 扣 10 ，如设置为2 则一个账号扣 10 , 默认 1
  * 
  */
-
-
 const axios = require('axios');
 const CryptoJS = require("crypto-js");
 const md5 = require("md5");
@@ -95,7 +91,8 @@ async function QueryAccount(env) {
     if (day1 < 0) {
         day = 0;
     }
-    var overdue = `\n【您已挂机】${day}天\n【预计失效】${day1}天后，${overdueDate1.format("MM月DD日")}失效。`;
+    var overdue = `\n【您已挂机】${day}天
+【预计失效】${day1}天后，${overdueDate1.format("MM月DD日")}失效。`
 
     var loginState = true;
     for (var i = 0; i < 5; i++) {
@@ -107,13 +104,11 @@ async function QueryAccount(env) {
         }
     }
     if (!loginState) {
-        await sendNotify(`账号：【${getPin(cookie)}】，失效了，请重新提交！`, false, cookie.UserId);
+        await sendNotify(`账号：【${getPin(cookie)}】，失效了，请发送 登录 ！`, false, cookie.UserId);
         ss = false;
         return;
     }
-
-    var msg = "目前有全自动续期 发送:自动挂机";
-
+    var msg = "CK不掉线 发送:自动挂机";
     try {
         msg += await TotalBean(cookie);  //账户基本信息
     } catch (e) {
@@ -121,14 +116,12 @@ async function QueryAccount(env) {
         console.log(`【${pin}】查询账户基本信息异常。`)
         console.log(e.message)
     }
-
     try {
         msg += await GoldBalance(cookie); // 极速版金币
     } catch (e) {
         console.log(`【${pin}】查询极速版金币信息异常。`)
         console.log(e.message)
     }
-
     try {
         msg += await redPacket(cookie); //红包
     } catch (e) {
@@ -142,14 +135,12 @@ async function QueryAccount(env) {
         console.log(`【${pin}】查询京豆信息异常。`)
         console.log(e.message)
     }
-
     try {
         msg += await jdCash(cookie); // 领现金
     } catch (e) {
         console.log(`【${pin}】查询领现金信息异常。`)
         console.log(e.message)
     }
-
     try {
         msg += await hfjifen(cookie); //权益积分
     } catch (e) {
@@ -175,48 +166,148 @@ async function QueryAccount(env) {
         console.log(e.message)
     }
     try {
+        //msg += await getCoupons(cookie);  //优惠券
+    } catch (e) {
+        console.log(`【${pin}】查询优惠券信息异常。`)
+        console.log(e.message)
+    }
+    try {
         msg += await plantBean(cookie);//种豆得豆
     } catch (e) {
         console.log(`【${pin}】查询种豆得豆信息异常。`)
         console.log(e.message)
     }
-
     try {
-        msg += await ecard(cookie); // E卡
+        msg += await ecard(cookie);
     } catch (e) {
         console.log(`【${pin}】查询E卡信息异常。`)
         console.log(e.message)
     }
-
     try {
-        msg += await getjdfruit(cookie); // 原东东农场信息
+        msg += await getjdfruit(cookie);
     } catch (e) {
         console.log(`【${pin}】查询东东农场信息异常。`)
         console.log(e.message)
     }
-
     try {
         msg += await getjdfarmhome(cookie); // 新东东农场信息
     } catch (e) {
         console.log(`【${pin}】查询新东东农场信息异常。`)
         console.log(e.message)
     }
-
     try {
-        msg += await health(cookie); // 健康社区
+        msg += await health(cookie);
     } catch (e) {
         console.log(`【${pin}】查询健康社区信息异常。`)
         console.log(e.message)
     }
-
     if (overdue) {
         msg += overdue;
     }
-
     console.log(msg);
-    await sendNotify(msg);
+    await sendNotify(msg)
 }
 
+async function wangwang(cookie) {
+    const sign = `appid=jd-super-market&functionId=atop_channel_my_score&client=m&body=%7B%22bizCode%22%3A%22cn_retail_jdsupermarket%22%2C%22scenario%22%3A%22sign%22%2C%22babelChannel%22%3A%22ttt1%22%2C%22isJdApp%22%3A%221%22%2C%22isWx%22%3A%220%22%7D&t=${Date.now()}`;
+    var options = {
+        url: 'http://api.m.jd.com/functionId=atop_channel_my_score',
+        method: 'post',
+        headers: {
+            'Cookie': cookie,
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Origin': 'https://pro.m.jd.com',
+            'User-Agent': 'jdapp;iPhone;11.6.0;;;M/5.0;appBuild/168341;jdSupportDarkMode/0;ef/1;ep/%7B%22ciphertype%22%3A5%2C%22cipher%22%3A%7B%22ud%22%3A%22DtvvYJq4EJvvZJG0CWTsC2PvY2UyZJHvCzHtCNPtZJS4EWG1DNrrCG%3D%3D%22%2C%22sv%22%3A%22CJCkCs41%22%2C%22iad%22%3A%22%22%7D%2C%22ts%22%3A1719811721%2C%22hdid%22%3A%22JM9F1ywUPwflvMIpYPok0tt5k9kW4ArJEU3lfLhxBqw%3D%22%2C%22version%22%3A%221.0.3%22%2C%22appname%22%3A%22com.360buy.jdmobile%22%2C%22ridx%22%3A-1%7D;Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;',
+            'Connection': 'keep-alive',
+            'Referer': 'https://pro.m.jd.com',
+        },
+        data: sign,
+        timeout: 30000
+    };
+    try {
+        const response = await axios(options);
+        const data = response.data;
+
+        if (data.code === "0" && data.data && data.data.floorData && data.data.floorData.items) {
+            const restScore = data.data.floorData.items[0].restScore || "0";
+            return `\n【汪贝余额】余额：${restScore}汪贝`;
+        } else {
+            return '\n【汪贝余额】查询信息异常。';
+        }
+    } catch (error) {
+        console.error('请求发生错误:', error);
+        return '\n【汪贝余额】查询信息异常。';
+    }
+}
+
+async function chaoshika(cookie) {
+    const sign = `appid=jd-super-market&t=${Date.now()}&functionId=atop_channel_marketCard_cardInfo&client=m&uuid=&body=%7B%22babelChannel%22%3A%22ttt9%22%2C%22isJdApp%22%3A%221%22%2C%22isWx%22%3A%220%22%7D`;
+    var options = {
+        url: 'https://api.m.jd.com/atop_channel_marketCard_cardInfo',
+        method: 'post',
+        headers: {
+            'Cookie': cookie,
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Origin': 'https://pro.m.jd.com',
+            'User-Agent': 'jdapp;iPhone;11.6.0;;;M/5.0;appBuild/168341;jdSupportDarkMode/0;ef/1;ep/%7B%22ciphertype%22%3A5%2C%22cipher%22%3A%7B%22ud%22%3A%22DtvvYJq4EJvvZJG0CWTsC2PvY2UyZJHvCzHtCNPtZJS4EWG1DNrrCG%3D%3D%22%2C%22sv%22%3A%22CJCkCs41%22%2C%22iad%22%3A%22%22%7D%2C%22ts%22%3A1719811721%2C%22hdid%22%3A%22JM9F1ywUPwflvMIpYPok0tt5k9kW4ArJEU3lfLhxBqw%3D%22%2C%22version%22%3A%221.0.3%22%2C%22appname%22%3A%22com.360buy.jdmobile%22%2C%22ridx%22%3A-1%7D;Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;',
+            'Connection': 'keep-alive',
+            'Referer': 'https://pro.m.jd.com',
+        },
+        data: sign,
+        timeout: 30000
+    };
+
+    try {
+        const response = await axios(options);
+        const data = response.data;
+
+        if (data.code === "0" && data.data && data.data.floorData && data.data.floorData.items) {
+            const marketCardVO = data.data.floorData.items[0].marketCardVO;
+            const balance = marketCardVO.balance || "0.00";
+            const giftGold = marketCardVO.giftGold || "0.00";
+            const expirationGiftAmountDes = marketCardVO.expirationGiftAmountDes || "无即将过期赠金";
+
+            return `\n【超市卡】余额：${balance}元，赠金：${giftGold}元，${expirationGiftAmountDes}`;
+        } else {
+            return '\n【超市卡】查询信息异常。';
+        }
+    } catch (error) {
+        console.error('请求发生错误:', error);
+        return '\n【超市卡】查询信息异常。';
+    }
+}
+
+async function wanyiwan(cookie) {
+    let sign = `functionId=wanyiwan_point_record&appid=signed_wh5&body={"pageNum":1,"version":1}&rfs=0000`;
+    var options = {
+        url: `https://api.m.jd.com/client.action`,
+        data: sign,
+        headers: {
+            'Cookie': cookie,
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Origin': 'https://pro.m.jd.com',
+            'User-Agent': 'jdapp;iPhone;11.6.0;;;M/5.0;appBuild/168341;jdSupportDarkMode/0;ef/1;ep/%7B%22ciphertype%22%3A5%2C%22cipher%22%3A%7B%22ud%22%3A%22DtvvYJq4EJvvZJG0CWTsC2PvY2UyZJHvCzHtCNPtZJS4EWG1DNrrCG%3D%3D%22%2C%22sv%22%3A%22CJCkCs41%22%2C%22iad%22%3A%22%22%7D%2C%22ts%22%3A1719811721%2C%22hdid%22%3A%22JM9F1ywUPwflvMIpYPok0tt5k9kW4ArJEU3lfLhxBqw%3D%22%2C%22version%22%3A%221.0.3%22%2C%22appname%22%3A%22com.360buy.jdmobile%22%2C%22ridx%22%3A-1%7D;Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;',
+            'Connection': 'keep-alive',
+            'Referer': 'https://pro.m.jd.com',
+        },
+        timeout: 30000,
+        method: 'post'
+    };
+
+    try {
+        const response = await axios(options);
+        const data = response.data;
+
+        if (data.code === 0 && data.data && data.data.bizCode === 0) {
+            return `\n【玩一玩奖票】${data.data.result.totalCount}个`;
+        } else {
+            return '\n【玩一玩奖票】查询玩一玩信息异常。';
+        }
+    } catch (error) {
+        console.error('请求发生错误:', error);
+        return '\n【玩一玩奖票】查询玩一玩信息异常。';
+    }
+}
 
 
 async function health(cookie) {
@@ -297,25 +388,23 @@ async function getjdfruit(cookie) {
     }
     var msg = "\n";
     var fruit = result;
-
     if (fruit.JdFarmProdName) {
         if (fruit.JdtreeEnergy != 0) {
             if (fruit.treeState === 2 || fruit.treeState === 3) {
-                msg += `【老农场】${fruit.JdFarmProdName}可以兑换了!`;
-                // await sendNotify(`东东农场的【${fruit.JdFarmProdName}】已经可以兑换啦 `);
+                msg += `【东东农场】[${fruit.JdFarmProdName}]可以兑换了!`;
+                //await sendNotify(`东东农场的【${fruit.JdFarmProdName}】已经可以兑换啦 `);
             } else {
-                let progress = ((fruit.JdtreeEnergy / fruit.JdtreeTotalEnergy) * 100).toFixed(0);
-                msg += `【老农场】${fruit.JdFarmProdName}(${progress}%)`;
+                msg += `【东东农场】${fruit.JdFarmProdName}(${((fruit.JdtreeEnergy / fruit.JdtreeTotalEnergy) * 100).toFixed(0)}%),共种值${fruit.JdwinTimes}次,已浇水${fruit.farmInfo.farmUserPro.treeEnergy / 10}次,还需${(fruit.farmInfo.farmUserPro.treeTotalEnergy - fruit.farmInfo.farmUserPro.treeEnergy) / 10}次`;
             }
         } else {
             if (fruit.treeState === 0) {
-                await sendNotify(`老农场水果领取后未重新种植 `);
+                await sendNotify(`东东农场水果领取后未重新种植 `);
             } else if (fruit.treeState === 1) {
-                msg += `【老农场】${fruit.JdFarmProdName}种植中,`;
+                msg += `【东东农场】${fruit.JdFarmProdName}种植中,共种值${fruit.JdwinTimes}次`;
             }
         }
     } else {
-        msg += `【老农场】查询异常`;
+        msg += `【东东农场】查询异常`;
     }
     return msg;
 }
@@ -564,110 +653,6 @@ async function hfjifen(cookie) {
     let data = await api(opts).json();
     return `\n【话费积分】${data.data.balanceNum}积分`;
 }
-
-
-async function wanyiwan(cookie) {
-    let sign = `functionId=wanyiwan_point_record&appid=signed_wh5&body={"pageNum":1,"version":1}&rfs=0000`;
-    var options = {
-        url: `https://api.m.jd.com/client.action`,
-        data: sign,
-        headers: {
-            'Cookie': cookie,
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Origin': 'https://pro.m.jd.com',
-            'User-Agent': 'jdapp;iPhone;11.6.0;;;M/5.0;appBuild/168341;jdSupportDarkMode/0;ef/1;ep/%7B%22ciphertype%22%3A5%2C%22cipher%22%3A%7B%22ud%22%3A%22DtvvYJq4EJvvZJG0CWTsC2PvY2UyZJHvCzHtCNPtZJS4EWG1DNrrCG%3D%3D%22%2C%22sv%22%3A%22CJCkCs41%22%2C%22iad%22%3A%22%22%7D%2C%22ts%22%3A1719811721%2C%22hdid%22%3A%22JM9F1ywUPwflvMIpYPok0tt5k9kW4ArJEU3lfLhxBqw%3D%22%2C%22version%22%3A%221.0.3%22%2C%22appname%22%3A%22com.360buy.jdmobile%22%2C%22ridx%22%3A-1%7D;Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;',
-            'Connection': 'keep-alive',
-            'Referer': 'https://pro.m.jd.com',
-        },
-        timeout: 30000,
-        method: 'post'
-    };
-
-    try {
-        const response = await axios(options);
-        const data = response.data;
-
-        if (data.code === 0 && data.data && data.data.bizCode === 0) {
-            return `\n【玩一玩奖票】${data.data.result.totalCount}个`;
-        } else {
-            return '\n【玩一玩奖票】查询玩一玩信息异常。';
-        }
-    } catch (error) {
-        console.error('请求发生错误:', error);
-        return '\n【玩一玩奖票】查询玩一玩信息异常。';
-    }
-}
-
-async function chaoshika(cookie) {
-    const sign = `appid=jd-super-market&t=${Date.now()}&functionId=atop_channel_marketCard_cardInfo&client=m&uuid=&body=%7B%22babelChannel%22%3A%22ttt9%22%2C%22isJdApp%22%3A%221%22%2C%22isWx%22%3A%220%22%7D`;
-    var options = {
-        url: 'https://api.m.jd.com/atop_channel_marketCard_cardInfo',
-        method: 'post',
-        headers: {
-            'Cookie': cookie,
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Origin': 'https://pro.m.jd.com',
-            'User-Agent': 'jdapp;iPhone;11.6.0;;;M/5.0;appBuild/168341;jdSupportDarkMode/0;ef/1;ep/%7B%22ciphertype%22%3A5%2C%22cipher%22%3A%7B%22ud%22%3A%22DtvvYJq4EJvvZJG0CWTsC2PvY2UyZJHvCzHtCNPtZJS4EWG1DNrrCG%3D%3D%22%2C%22sv%22%3A%22CJCkCs41%22%2C%22iad%22%3A%22%22%7D%2C%22ts%22%3A1719811721%2C%22hdid%22%3A%22JM9F1ywUPwflvMIpYPok0tt5k9kW4ArJEU3lfLhxBqw%3D%22%2C%22version%22%3A%221.0.3%22%2C%22appname%22%3A%22com.360buy.jdmobile%22%2C%22ridx%22%3A-1%7D;Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;',
-            'Connection': 'keep-alive',
-            'Referer': 'https://pro.m.jd.com',
-        },
-        data: sign,
-        timeout: 30000
-    };
-
-    try {
-        const response = await axios(options);
-        const data = response.data;
-
-        if (data.code === "0" && data.data && data.data.floorData && data.data.floorData.items) {
-            const marketCardVO = data.data.floorData.items[0].marketCardVO;
-            const balance = marketCardVO.balance || "0.00";
-            const giftGold = marketCardVO.giftGold || "0.00";
-            const expirationGiftAmountDes = marketCardVO.expirationGiftAmountDes || "无即将过期赠金";
-
-            return `\n【超市卡】余额：${balance}元，赠金：${giftGold}元，${expirationGiftAmountDes}`;
-        } else {
-            return '\n【超市卡】查询信息异常。';
-        }
-    } catch (error) {
-        console.error('请求发生错误:', error);
-        return '\n【超市卡】查询信息异常。';
-    }
-}
-
-async function wangwang(cookie) {
-    const sign = `appid=jd-super-market&functionId=atop_channel_my_score&client=m&body=%7B%22bizCode%22%3A%22cn_retail_jdsupermarket%22%2C%22scenario%22%3A%22sign%22%2C%22babelChannel%22%3A%22ttt1%22%2C%22isJdApp%22%3A%221%22%2C%22isWx%22%3A%220%22%7D&t=${Date.now()}`;
-    var options = {
-        url: 'http://api.m.jd.com/functionId=atop_channel_my_score',
-        method: 'post',
-        headers: {
-            'Cookie': cookie,
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Origin': 'https://pro.m.jd.com',
-            'User-Agent': 'jdapp;iPhone;11.6.0;;;M/5.0;appBuild/168341;jdSupportDarkMode/0;ef/1;ep/%7B%22ciphertype%22%3A5%2C%22cipher%22%3A%7B%22ud%22%3A%22DtvvYJq4EJvvZJG0CWTsC2PvY2UyZJHvCzHtCNPtZJS4EWG1DNrrCG%3D%3D%22%2C%22sv%22%3A%22CJCkCs41%22%2C%22iad%22%3A%22%22%7D%2C%22ts%22%3A1719811721%2C%22hdid%22%3A%22JM9F1ywUPwflvMIpYPok0tt5k9kW4ArJEU3lfLhxBqw%3D%22%2C%22version%22%3A%221.0.3%22%2C%22appname%22%3A%22com.360buy.jdmobile%22%2C%22ridx%22%3A-1%7D;Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;',
-            'Connection': 'keep-alive',
-            'Referer': 'https://pro.m.jd.com',
-        },
-        data: sign,
-        timeout: 30000
-    };
-    try {
-        const response = await axios(options);
-        const data = response.data;
-
-        if (data.code === "0" && data.data && data.data.floorData && data.data.floorData.items) {
-            const restScore = data.data.floorData.items[0].restScore || "0";
-            return `\n【汪贝余额】余额：${restScore}汪贝`;
-        } else {
-            return '\n【汪贝余额】查询信息异常。';
-        }
-    } catch (error) {
-        console.error('请求发生错误:', error);
-        return '\n【汪贝余额】查询信息异常。';
-    }
-}
-
-
 
 async function jdCash(cookie) {
     let sign = `body=%7B%7D&build=167968&client=apple&clientVersion=10.4.0&d_brand=apple&d_model=iPhone13%2C3&ef=1&eid=eidI25488122a6s9Uqq6qodtQx6rgQhFlHkaE1KqvCRbzRnPZgP/93P%2BzfeY8nyrCw1FMzlQ1pE4X9JdmFEYKWdd1VxutadX0iJ6xedL%2BVBrSHCeDGV1&ep=%7B%22ciphertype%22%3A5%2C%22cipher%22%3A%7B%22screen%22%3A%22CJO3CMeyDJCy%22%2C%22osVersion%22%3A%22CJUkDK%3D%3D%22%2C%22openudid%22%3A%22CJSmCWU0DNYnYtS0DtGmCJY0YJcmDwCmYJC0DNHwZNc5ZQU2DJc3Zq%3D%3D%22%2C%22area%22%3A%22CJZpCJCmC180ENcnCv80ENc1EK%3D%3D%22%2C%22uuid%22%3A%22aQf1ZRdxb2r4ovZ1EJZhcxYlVNZSZz09%22%7D%2C%22ts%22%3A1648428189%2C%22hdid%22%3A%22JM9F1ywUPwflvMIpYPok0tt5k9kW4ArJEU3lfLhxBqw%3D%22%2C%22version%22%3A%221.0.3%22%2C%22appname%22%3A%22com.360buy.jdmobile%22%2C%22ridx%22%3A-1%7D&ext=%7B%22prstate%22%3A%220%22%2C%22pvcStu%22%3A%221%22%7D&isBackground=N&joycious=104&lang=zh_CN&networkType=3g&networklibtype=JDNetworkBaseAF&partner=apple&rfs=0000&scope=11&sign=98c0ea91318ef1313786d86d832f1d4d&st=1648428208392&sv=101&uemps=0-0&uts=0f31TVRjBSv7E8yLFU2g86XnPdLdKKyuazYDek9RnAdkKCbH50GbhlCSab3I2jwM04d75h5qDPiLMTl0I3dvlb3OFGnqX9NrfHUwDOpTEaxACTwWl6n//EOFSpqtKDhg%2BvlR1wAh0RSZ3J87iAf36Ce6nonmQvQAva7GoJM9Nbtdah0dgzXboUL2m5YqrJ1hWoxhCecLcrUWWbHTyAY3Rw%3D%3D`
@@ -1011,22 +996,8 @@ function taskcashUrl(functionId, body = {}) {
         timeout: 10000
     }
 }
-async function getJingBeanBalanceDetail(cookie, page) {
-    const options = {
-        "url": ` https://api.m.jd.com/client.action`,
-        "body": `body=${escape(JSON.stringify({ "pageSize": "20", "page": page.toString() }))}&appid=ld`,
-        "headers": {
-            'User-Agent': "okhttp/3.12.16;jdmall;android;version/12.2.0;build/98990;",
-            'Host': 'api.m.jd.com',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Cookie': cookie,
-        },
-        method: "post"
-    }
-    var data = await api(options).json();
-    console.log(`查询京东返回消息：${JSON.stringify(data)}`);
-    return data;
-}
+
+
 
 
 
