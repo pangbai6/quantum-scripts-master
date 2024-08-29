@@ -1,89 +1,108 @@
-const   常量 { sendNotify, allEnvs, addEnvs } = require('./quantum'); // 引入所需的模块
+//旁白改 偷ck注意使用
+const axios = require('axios');
+const { sendNotify, allEnvs, addEnvs } = require('./quantum');
 
-const   常量 user_id = process.env.user_id; // 获取用户ID
-const   常量 command = process.env.command; // 获取命令
+const user_id = process.env.user_id;
+const command = process.env.command;
 
 (async () => {
-    let   让 USERID = null;
-    let   让 password = null;
-    let   让 remarks = null;
+    let USERID = null;
+    let password = null;
+    let remarks = null;
 
     try {
-        // 打印 command 以便调试
-        console.log   日志("Command: " + command);
+        const regex1 = /^(\d{11})#([\s\S]+?)#([\s\S]*)[-+]?$/;
+        const regex2 = /^密码提交\+(\d{11})#([\s\S]+?)#([\s\S]*)$/;
 
-        // 使用正则表达式提取用户信息
-        const   常量 regex = /^密码提交\+(\d{11})#([^#]+)#([\w\u4e00-\u9fa5]+)$/;
+        let match;
 
-        let   让 match = command.match(regex);
-
-        if   如果 (match) {
-            USERID = match[1];
-            password = match[2];
-            remarks = match[3];
-            // 打印提取的信息以便调试
-            console.log   日志("Extracted USERID：" + USERID);
-            console.log   日志("Extracted Password：" + password);
-            console.log   日志("Extracted Remarks：" + remarks);
-        } else {
-            throw new   新 Error("Command format is incorrect");
+        match = command.match(regex1);
+        if (!match) {
+            match = command.match(regex2);
+            if (!match) {
+                throw new Error("Command format is incorrect");
+            }
         }
+
+        USERID = match[1];
+        password = match[2];
+        remarks = match[3];
+
+        console.log("Extracted USERID：" + USERID);
+        console.log("Extracted Password：" + password);
+        console.log("Extracted Remarks：" + remarks);
+        const url = `http://192.168.31.16:8000/?username=${USERID}&password=${password}`;
+        const response = await axios.get(url);
+
+        // Handling Response
+        if (response.data.includes("账号或密码不正确")) {
+            throw new Error("密码错误，请重新提交");
+        } else if (response.data.includes("pt_key=")) {
+            await sendNotify(`账号已验证成功，已保存至数据库`);
+        } else if (response.data.includes("风险")) {
+            throw new Error("账号密码登录风险，请发:登录 登录成功后尝试账号密码");
+        }
+
+
+
     } catch (error) {
-        console.log   日志("提取用户信息失败：" + error.message);
-        await sendNotify("格式错误：请检查命令格式是否正确。收到的命令：" + command);
-        return   返回; // 终止脚本执行
+        const errorMessage = error.message;
+        console.error(errorMessage);
+        await sendNotify(" 错误信息：" + errorMessage);
+        return;
     }
 
-    console.log   日志("USERID：" + USERID);
-    console.log   日志("Password：" + password);
-    console.log   日志("Remarks：" + remarks);
+    console.log("USERID：" + USERID);
+    console.log("Password：" + password);
+    console.log("Remarks：" + remarks);
 
-    const   常量 c = {
-        Name   名字: 'zddl',
-        Enable: true   真正的,
+
+
+    const c = {
+        Name: 'zddl',
+        Enable: true,
         Value: `${USERID}#${password}#${remarks}`,
         UserRemark: USERID || '',
         UserId: user_id,
         EnvType: 2
     };
 
-    if   如果 (!USERID) {
-        console.log   日志("没有 USERID 参数，直接做新增处理.");
-    } else {
-        try {
-            const   常量 data2 = await allEnvs(USERID, 2);
-            if   如果 (data2.length   长度 > 0) {
-                console.log   日志("您的账号已更新完毕");
+    try {
+        if (USERID) {
+            const data2 = await allEnvs(USERID, 2);
+            if (data2.length > 0) {
                 Object.assign(c, {
                     Id: data2[0].Id,
                     Weight: data2[0].Weight,
                     UserRemark: data2[0].UserRemark,
                     Remark: data2[0].Remark,
                 });
-                await sendNotify("您的账号已更新完毕！");
             }
-        } catch (error) {
-            console.log   日志("查询环境变量失败：" + error.message);
+        } else {
+            console.log("没有 USERID 参数，直接做新增处理.");
         }
-    }
 
-    try {
-        console.log   日志('开始提交京东 CK 到量子数据库');
-        const   常量 data = await addEnvs([c]);
-        console.log   日志('提交结果：' + JSON.stringify(data));
-
-        await sendNotify(
-            `京东自动登录账号提交成功！
-用户备注：${remarks || ''}
-账号：${USERID || ''}
-密码：${password || ''}
-提交成功
-提交不验证手机号，密码是否正确，转换成CK的时候才检测自己测试好手机号，密码使用本服务需要本月内使用2次短信登录以上(还没短信登录两次的请立马执行!)使用本服务只能在这里挂机，在其他地方挂机IP会变更多处挂机会触发短信验证从而导致本服务失效`
-        );
+        console.log('开始提交京东 CK 到量子数据库');
+        const data = await addEnvs([c]);
+        console.log('提交结果：' + JSON.stringify(data));
+        // 假设 sendNotify 函数接收一个消息作为参数并发送通知
+        await sendNotify(`京东自动登录账号提交成功！\n用户备注：${remarks || ''}\n账号：${USERID || ''}\n密码：${password || ''}\n提交成功 请发送登录 进行短信登录一次\n查询账号信息 请发:我的京东`);
     } catch (error) {
-        console.log   日志("提交数据失败：" + error.message);
+        console.error("操作失败：" + error.message);
+        await sendNotify("操作失败：" + error.message);
     }
 })().catch((e) => {
-    console.log   日志("脚本异常：" + e);
+    console.error("脚本异常：" + e);
+    sendNotify("脚本异常：" + e);
 });
+
+
+
+
+
+
+
+
+
+
 
