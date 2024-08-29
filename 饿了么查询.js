@@ -16,7 +16,7 @@ var tryCount = 1;
 
     if (_0x4bc58b.length == 0) {
         console.log("没有Cookies信息结束任务。");
-        await sendNotify("您还没有提交饿了么账号 发送:饿了么代挂  开启代挂之旅");
+        await sendNotify("您还没有提交饿了么账号");
         return;
     }
 
@@ -52,8 +52,8 @@ async function QueryAccount(_0x44aff5) {
 
     _0x42dcea < 0 && (_0x26379b = 0);
 
-    var _0x1dfc8b = "\n【您已挂机】" + _0x26379b + "天\n【预计失效】" + _0x42dcea + "天后，" + _0x336191.format("MM月DD日"),
-        _0x4eb901 = "【温馨提示】如每天低于1000乐园币 发:饿了么攻略。饿了么抓ck回复：饿了么代挂\n【用户ID】" + _0xac55b9;
+    var _0x1dfc8b = "\n【您已挂机】" + _0x26379b + "天",
+        _0x4eb901 = "【用户ID】" + _0xac55b9;
 
     try {
         _0x4eb901 += await elmapi(_0xc2fc);
@@ -65,48 +65,8 @@ async function QueryAccount(_0x44aff5) {
         return;
     }
 
-    try {
-        _0x4eb901 += await elmauthentication(_0xc2fc);
-    } catch (_0xef4b9a) {
-        console.log("【" + _0xac55b9 + "】查询账户实名状态异常。");
-        console.log(_0xef4b9a.message);
-    }
 
-    try {
-        svip = await elmfoodiesvip(_0xc2fc);
-        svip.indexOf("undefined") > -1 ? console.log("【" + _0xac55b9 + "】查询账户吃货咯会员异常。") : _0x4eb901 += svip;
-    } catch (_0x544e17) {
-        console.log("【" + _0xac55b9 + "】查询账户吃货咯会员异常。");
-        console.log(_0x544e17.message);
-    }
 
-    try {
-        _0x4eb901 += await elmsvip(_0xc2fc);
-    } catch (_0x15fcfc) {
-        console.log("【" + _0xac55b9 + "】查询账户会员svip异常。");
-        console.log(_0x15fcfc.message);
-    }
-
-    try {
-        _0x4eb901 += await elmbbfapi(_0xc2fc);
-    } catch (_0x1eb12a) {
-        console.log("【" + _0xac55b9 + "】查询账户笔笔返异常。");
-        console.log(_0x1eb12a.message);
-    }
-
-    try {
-        _0x4eb901 += await elmxqapi(_0xc2fc);
-    } catch (_0x337015) {
-        console.log("【" + _0xac55b9 + "】查询账户今日豆豆异常。");
-        console.log(_0x337015.message);
-    }
-
-    try {
-        _0x4eb901 += await elmxqapi1(_0xc2fc);
-    } catch (_0x403095) {
-        console.log("【" + _0xac55b9 + "】查询账户本月豆豆异常。");
-        console.log(_0x403095.message);
-    }
 
     try {
         _0x4eb901 += await elmtodaylyb(_0xc2fc);
@@ -139,7 +99,7 @@ async function elmapi(_0x15aac4) {
     },
         _0x14db17 = await api(_0xc6f5a6).json();
 
-    return "\n【CK状态】有效\n【用户昵称】" + _0x14db17.username + "\n【手机尾号】" + _0x14db17.mobile.match(/\d{4}$/)[0];
+    return "\n【手机尾号】" + _0x14db17.mobile.match(/\d{4}$/)[0];
 }
 
 async function elmbbfapi(_0x5e495c) {
@@ -180,7 +140,7 @@ async function elmxqapi(_0x206b95) {
         }
     }
 
-    return "\n【当前豆豆】" + _0x209cf7.peaCount + "\n【今日豆豆】" + _0x4cb406;
+
 }
 
 async function elmxqapi1(_0x19db94) {
@@ -210,7 +170,7 @@ async function elmxqapi1(_0x19db94) {
 
     var _0x16f473 = _0x2d6426 + _0x413c3f;
 
-    return "\n【本月豆豆】" + _0x47dcb1.monthAccountInfo[_0x16f473].plusCount;
+
 }
 
 async function elmlyb(_0x385a10) {
@@ -512,7 +472,7 @@ async function elmsvip(_0x572eb0) {
         _0x3b4ea8 = _0x51f943.data.data.rankCardBlock[_0xe40144].rankDesc,
         _0x1ef727 = _0x3b4ea8.replace("有效期至", "").replace("", "");
 
-    return "\n【会员等级】" + _0x51f943.data.data.rankCardBlock[_0xe40144].ruleDescVO.ruleDescTitle + " \n【会员期效】" + _0x1ef727;
+
 }
 
 async function elmfoodiesvip(_0xbb22d) {
@@ -579,8 +539,7 @@ async function elmfoodiesvip(_0xbb22d) {
         _0x40e810 = await api(_0x1ebad0),
         _0x218dcb = JSON.parse(_0x40e810.body);
 
-    if (_0x218dcb.data.data.svipHomepage.beAliVip = true) return "\n【超级吃货】" + _0x218dcb.data.data.svipHomepage.expireDate + "\n【吃货红包】" + _0x218dcb.data.data.couponAssert.available;
-    return;
+
 }
 
 async function elmauthentication(_0x13e3b8) {
@@ -650,9 +609,7 @@ async function elmauthentication(_0x13e3b8) {
 
     var _0x5bcd4f = JSON.parse(_0x4ec944.body);
 
-    if (_0x5bcd4f.data.data.adult = true) {
-        return "\n【实名状态】已实名";
-    } else return "\n【实名状态】未实名";
+
 }
 
 function getUSERID(_0x1104b5) {
@@ -730,8 +687,5 @@ function map(_0x317191, _0x3ee8c4, _0x2090e4) {
 
     return jj(_0x1c7264);
 }
-
-
-
 
 
